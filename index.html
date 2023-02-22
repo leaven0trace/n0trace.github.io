@@ -472,6 +472,25 @@
 		body {
 			background-image: none;
 		}
+                #main-stuff {
+                      margin: 20px !important;
+                      padding: 20px !important;
+                }
+                #long-logo {
+                      display: inline-block;
+                }
+                #short-logo {
+                      text-align: center;
+                      display: none;
+                }
+                @media screen and (max-width: 758px) {
+                      #long-logo {
+                           display: none;
+                      }
+                     #short-logo {
+                          display:inline-block;
+                     }
+                 }
 	</style>
 </head>
 
@@ -490,7 +509,7 @@
 				<main id="main" class="site-main">
 
 
-					<div class="intro">
+					<div class="intro" id="main-stuff">
 
 						<div id="mlb2-3602107"
 							class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-3602107">
@@ -507,7 +526,7 @@
 									</div>
 									<div class="ml-form-embedBody ml-form-embedBodyDefault row-form">
 										<div class="ml-form-embedContent" style=" ">
-											<h4>Enter for email updates:</h4>
+											<h4>Enter email for invites:</h4>
 										</div>
 
 										<form class="ml-block-form"
@@ -626,17 +645,31 @@
 												src='https://allpossibleworlds.de/wp-content/themes/apw/js/skip-link-focus-fix.js?ver=20151215'
 												id='apw-skip-link-focus-fix-js'></script>
 
-											<pre>
+											<pre id="long-logo">
 
-.##....##...#####...########.########.....###.....######..########
-.###...##..##...##.....##....##.....##...##.##...##....##.##......
-.####..##.##.#...##....##....##.....##..##...##..##.......##......
-.##.##.##.##..#..##....##....########..##.....##.##.......######..
-.##..####.##...#.##....##....##...##...#########.##.......##......
-.##...###..##...##.....##....##....##..##.....##.##....##.##......
-.##....##...#####......##....##.....##.##.....##..######..########
+##....##...#####...########.########.....###.....######..########
+###...##..##...##.....##....##.....##...##.##...##....##.##......
+####..##.##.#...##....##....##.....##..##...##..##.......##......
+##.##.##.##..#..##....##....########..##.....##.##.......######..
+##..####.##...#.##....##....##...##...#########.##.......##......
+##...###..##...##.....##....##....##..##.....##.##....##.##......
+##....##...#####......##....##.....##.##.....##..######..########
     </pre>
-											<div class="pressplay"><span class="boringtext">Loading...</span><span
+
+<pre id="short-logo">
+..#####..
+.##...##.
+##.#...##
+##..#..##
+##...#.##
+.##...##.
+..#####..
+    </pre>
+
+
+
+
+											<div class="pressplay"><span class="boringtext">Coming soon...</span><span
 													class="cursor">█</span></div>
 									</div>
 				</main><!-- #main -->
