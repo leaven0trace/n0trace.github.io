@@ -498,15 +498,15 @@
 
 <body class="home page-template-default page page-id-2 theme-apw woocommerce-no-js">
 	<div id="page" class="site">
-		
+
 		<header id="masthead" class="site-header">
 			<div class="site-branding">
 			</div><!-- .site-branding -->
-			
+
 		</header><!-- #masthead -->
 
 		<div id="content" class="site-content">
-			
+
 			<div id="primary" class="content-area">
 				<main id="main" class="site-main">
 					<div id="main-stuff">
@@ -574,68 +574,66 @@
 						</div>
 
 						<style>
-							.c1 {
-								display: inline-block;
-							}
-							.c2 {
-								display: inline-block;
-							}
-							.type1 {
-								overflow: hidden;
-								border-right: .3em solid transparent;
-								/* font-size: 1.6rem; */
-								width: 0;
-								white-space: nowrap;
-								animation: 
-									blink1 0.2s linear 0s 25 alternate,
-    							typing 5s steps(20, end) forwards;
-								}
-							.type2 {
-								overflow: hidden;
-								border-right: .3em solid transparent;
-								/* font-size: 1.6rem; */
-								width: 0;
-								white-space: nowrap;
-								animation: 
-								blink1 0.2s linear 0s 25 alternate,
-								typing 5s steps(20, end) forwards,
-								blink1 .9s infinite;
-								animation-delay: 5s;
-							}
+						 .c1 {
+								 display: inline-block;
+						 }
+						 .c2 {
+								 display: inline-block;
+						 }
+						 .type1 {
+								 overflow: hidden;
+								 border-right: .3em solid transparent;
+								 /* font-size: 1.6rem; */
+								 width: 0;
+								 white-space: nowrap;
+								 animation:
+									   blink1 0.2s linear 0s 25 alternate,
+    							   typing 5s steps(20, end) forwards;
+						 }
+						 .type2 {
+								 overflow: hidden;
+								 border-right: .3em solid transparent;
+								 /* font-size: 1.6rem; */
+								 width: 0;
+								 white-space: nowrap;
+								 animation:
+								     blink1 0.2s linear 0s 25 alternate,
+								     typing 5s steps(20, end) forwards,
+								     blink1 .9s infinite;
+								 animation-delay: 5s;
+						 }
 
-							@keyframes typing {
-								from { width: 0 }
-								to { width: 100% }
-							}
-							@keyframes blink1 {
-								from { border-color: white }
-								to { border-color: transparent; }
-							}
+						 @keyframes typing {
+								 from { width: 0 }
+								 to { width: 100% }
+						 }
+						 @keyframes blink1 {
+								 from { border-color: white }
+								 to { border-color: transparent; }
+						 }
 
+             #short-logo {
+                 transition: opacity 8s ease-in-out;
+             }
+             #long-logo {
+                 transition: opacity 8s ease-in-out;
+             }
+             .fade-out {
+                 opacity: 0;
+             }
 
 
 						</style>
 
-						<script>
-							function ml_webform_success_3602107() {
-								console.log("U SHOULDN'T LOOK HERE ;)");
-								// Can redirect to another page on our site mayb?
-								// try {
-									// 	window.top.location.href = 'http://google.com';
-									// } catch (e) {
-										// 	window.location.href = 'http://google.com';
-										// }
-										var $ = ml_jQuery || jQuery;
-										$('.ml-subscribe-form-3602107 .row-success').show();
-										$('.ml-subscribe-form-3602107 .row-form').hide();
-									}
-									
-									</script>
 						<script src="https://groot.mailerlite.com/js/w/webforms.min.js?v300817f630ad0e957914d0b28a2b6d78" type="text/javascript"></script>
-						
-						
+            <script>
 
-							
+
+            </script>
+
+
+
+
 <pre id="long-logo">
 ##....##...#####...########.########.....###.....######..########
 ###...##..##...##.....##....##.....##...##.##...##....##.##......
@@ -714,6 +712,28 @@
 	..#####..
 </pre> -->
 
+
+<script>
+ function ml_webform_success_3602107() {
+		 console.log("U SHOULDN'T LOOK HERE ;)");
+		 // Can redirect to another page on our site mayb?
+		 // try {
+		 // 	window.top.location.href = 'http://google.com';
+		 // } catch (e) {
+		 // 	window.location.href = 'http://google.com';
+		 // }
+		 var $ = ml_jQuery || jQuery;
+		 $('.ml-subscribe-form-3602107 .row-success').show();
+		 $('.ml-subscribe-form-3602107 .row-form').hide();
+     const shortLogo = document.getElementById('short-logo');
+     const longLogo = document.getElementById('long-logo');
+
+     shortLogo.classList.add('fade-out');
+     longLogo.classList.add('fade-out');
+
+ }
+
+</script>
 
 
 <!-- <div class="pressplay"><span class="boringtext">Coming soon...</span><span
