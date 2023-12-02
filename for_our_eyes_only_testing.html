@@ -68,27 +68,17 @@
 <script>
     function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
-}
-    
-if (Date.now() > 1701576000000) {
-    window.location.replace("https://n0trace.com/dec022023_super_secret.html");
-} else {
-    if (Date.now() > 1701540000000) {
-        sleep(2000).then(() => {
-            document.getElementById("text").innerHTML = "I'm sensing a party coming...";
-        });
-        sleep(4000).then(() => {
-            document.getElementById("text").innerHTML = "Taking you to a secret page with details...";
-        });
-        sleep(6000).then(() => {
-            window.location.replace("https://n0trace.com/dec022023_super_secret.html");
-        });
-    } else {
-        sleep(2000).then(() => {
-            document.getElementById("text").innerHTML = "You're early. Check back at 10:00 am!";
-        });
     }
-}
+    
+    sleep(1500).then(() => {
+        document.getElementById("text").innerHTML = "I'm sensing a party coming...";
+    });
+    sleep(3000).then(() => {
+        document.getElementById("text").innerHTML = "Taking you to a secret page with details...";
+    });
+    sleep(4500).then(() => {
+        window.location.replace("https://n0trace.com/dec022023_super_secret.html");
+    });
 </script>
 </body>
 </html>

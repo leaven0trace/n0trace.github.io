@@ -67,27 +67,28 @@
 <!-- If you're reading this also, congrats! You know HTML :P Come talk to an organizer and maybe you can make our shitty website better -->
 <script>
     function sleep (time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
-    
-    sleep(1500).then(() => {
-        document.getElementById("text").innerHTML = "I'm sensing a party coming...";
-    });
-    sleep(3000).then(() => {
-        document.getElementById("text").innerHTML = "It's gonna be a good one...";
-    });
-    if (Date.now() > 1701540000000) {
-        sleep(4500).then(() => {
-            document.getElementById("text").innerHTML = "Taking you to a top secret page with details...";
-        });
-        sleep(6000).then(() => {
-            window.location.replace("https://n0trace.com/dec022023_secret.html");
-        });
-    } else {
-        sleep(4500).then(() => {
-            document.getElementById("text").innerHTML = "Ah, you're early. Check back at 10:00 am!";
-        });
+        return new Promise((resolve) => setTimeout(resolve, time));
     }
+    window.location.replace("https://n0trace.com/dec022023_secret.html");
+    
+    // sleep(2000).then(() => {
+    //     document.getElementById("text").innerHTML = "I'm sensing a party coming...";
+    // });
+    // sleep(4000).then(() => {
+    //     document.getElementById("text").innerHTML = "It's gonna be a good one...";
+    // });
+    // if (Date.now() > 1701540000000) {
+    //     sleep(6000).then(() => {
+    //         document.getElementById("text").innerHTML = "Taking you to a top secret page with details...";
+    //     });
+    //     sleep(8000).then(() => {
+    //         window.location.replace("https://n0trace.com/dec022023_secret.html");
+    //     });
+    // } else {
+    //     sleep(10000).then(() => {
+    //         document.getElementById("text").innerHTML = "Ah, you're early. Check back at 10:00 am!";
+    //     });
+    // }
 </script>
 </body>
 </html>
