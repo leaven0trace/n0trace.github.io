@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ASCII Art Animation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        #ascii-container {
+            font-size: 14px;
+            line-height: 1;
+            white-space: pre;
+            letter-spacing: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+        .shape-char {
+            opacity: 1;
+            /* Color will be set dynamically via JavaScript */
+        }
+        .nearby-char {
+            color: #b8d1ff; /* Light blue-white */
+            text-shadow: 0 0 3px #ffffff;
+            opacity: 0.8;
+        }
+        .background-char {
+            opacity: 0.5; /* Make background characters translucent */
+        }
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: auto;
+            max-width: 95%;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #3b77db;
+        }
+        input {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 5px;
+            font-family: monospace;
+        }
+        input[type="number"] {
+            width: 60px;
+        }
+        input[type="text"] {
+            width: 120px;
+        }
+        input[type="radio"] {
+            accent-color: #4285f4;
+            margin-right: 5px;
+        }
+        label {
+            font-family: monospace;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .options-grid {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        .option-column {
+            min-width: 120px;
+        }
+        .option-group {
+            margin-bottom: 10px;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .radio-group label {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        .divider {
+            width: 1px;
+            height: 30px;
+            background-color: #555;
+            margin: 0 5px;
+        }
+        #toggleOptionsBtn {
+            padding: 5px 10px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            cursor: pointer;
+        }
+        #toggleOptionsBtn:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div id="ascii-container"></div>
+    
+    <div id="controls">
+        <button id="playPauseBtn">PAUSE</button>
+        <div class="divider"></div>
+        
+        <div class="control-group">
+            <label for="charSpeedInput">Char Speed (ms):</label>
+            <input type="number" id="charSpeedInput" min="10" max="1000" value="150">
+        </div>
+        
+        <div class="control-group">
+            <label for="animSpeedInput">Animation Speed:</label>
+            <input type="number" id="animSpeedInput" min="1" max="100" value="20" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label for="shapeSizeInput">Shape Size:</label>
+            <input type="range" id="shapeSizeInput" min="10" max="40" value="18" step="1">
+        </div>
+        
+        <div class="control-group">
+            <label for="colorSelect">Color:</label>
+            <select id="colorSelect">
+                <option value="blue">Blue</option>
+                <option value="red">Red</option>
+                <option value="green">Green</option>
+                <option value="random">Random</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="colorSpeedInput">Color Change (s):</label>
+            <input type="number" id="colorSpeedInput" min="1" max="10" value="3" step="1">
+        </div>
+        
+        <div class="divider"></div>
+        
+        <button id="toggleOptionsBtn">Show Options</button>
+        
+        <div id="advancedOptions" style="display: none; margin-top: 10px;">
+            <div class="options-grid">
+                <div class="option-column">
+                    <div class="option-group">
+                        <label>Shape:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="shape" value="cube" checked> Cube</label>
+                            <label><input type="radio" name="shape" value="sphere"> Sphere</label>
+                            <label><input type="radio" name="shape" value="diamond"> Diamond</label>
+                            <label><input type="radio" name="shape" value="custom"> Custom Text</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="option-column">
+                    <div class="option-group">
+                        <label>Animation:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="animation" value="rotate" checked> Auto Rotate</label>
+                            <label><input type="radio" name="animation" value="static"> Static</label>
+                            <label><input type="radio" name="animation" value="scroll"> Scroll</label>
+                            <label><input type="radio" name="animation" value="bounce"> Bounce</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="customTextWrapper" style="display: none; margin-top: 10px;">
+                <label for="customTextInput">Custom Text:</label>
+                <input type="text" id="customTextInput" placeholder="Enter text...">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate grid size based on viewport
+        const calculateGridSize = () => {
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight - 100; // Subtract space for controls
+            
+            // Calculate how many characters will fit
+            const charWidth = 10;  // Approximate width of a character in pixels
+            const charHeight = 14; // Approximate height
+            
+            return {
+                COLS: Math.floor(viewportWidth * 0.9 / charWidth),
+                ROWS: Math.floor(viewportHeight * 0.9 / charHeight)
+            };
+        };
+        
+        const { COLS, ROWS } = calculateGridSize();
+        
+        const container = document.getElementById('ascii-container');
+        const chars = '#$%&()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz{|}~';
+        
+        // Grid storage
+        let grid = [];
+        let shapePositions = new Set();
+        let nearbyShapePositions = new Set();
+        
+        // Optimization: Cache DOM container and precompute frequently used values
+        let containerElement; // Stores positions adjacent to shapes for glow effect
+        let angle = Math.PI/4; // Initial rotation angle (45 degrees)
+        let mouseX = 0;
+        let mouseY = 0;
+        let useMouseRotation = false;
+        let targetAngle = Math.PI/4; // Target angle for rotation (initially same as angle)
+        
+        // Current shape and animation settings
+        let currentShape = 'cube';
+        let currentAnimation = 'rotate';
+        let customText = '';
+        
+        // Animation properties
+        let offsetX = 0;
+        let offsetY = 0;
+        let directionX = 1; // 1 for right, -1 for left
+        let directionY = 1; // 1 for down, -1 for up
+        
+        // Animation state
+        let isPlaying = true;
+        
+        // Animation speeds, shape size and color
+        let charAnimationSpeed = 150; // ms between character updates
+        let animationSpeed = 20; // Higher value = faster animation
+        let shapeSize = 0.18; // Shape size (proportion of screen)
+        let shapeColor = '#4285f4'; // Default color (Google blue)
+        let useRandomColors = false;
+        let lastColorChangeTime = 0;
+        let colorChangeSpeed = 3000; // ms between color changes (default 3 seconds)
+        let backgroundAnimationId = null; // Separate animation loop for background
+        
+        // Get control elements
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const charSpeedInput = document.getElementById('charSpeedInput');
+        const animSpeedInput = document.getElementById('animSpeedInput');
+        const shapeSizeInput = document.getElementById('shapeSizeInput');
+        const colorSelect = document.getElementById('colorSelect');
+        const colorSpeedInput = document.getElementById('colorSpeedInput');
+        const toggleOptionsBtn = document.getElementById('toggleOptionsBtn');
+        const advancedOptions = document.getElementById('advancedOptions');
+        const customTextInput = document.getElementById('customTextInput');
+        const customTextWrapper = document.getElementById('customTextWrapper');
+        const shapeRadios = document.querySelectorAll('input[name="shape"]');
+        const animationRadios = document.querySelectorAll('input[name="animation"]');
+        
+        function getRandomChar() {
+            return chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        function initializeScreen() {
+            // Cache the container element for faster DOM access
+            containerElement = document.getElementById('ascii-container');
+            
+            // Initialize the grid with random characters
+            // Pre-allocate the grid for better performance
+            grid = new Array(ROWS);
+            for (let y = 0; y < ROWS; y++) {
+                grid[y] = new Array(COLS);
+                for (let x = 0; x < COLS; x++) {
+                    grid[y][x] = {
+                        char: getRandomChar(),
+                        isShape: false,
+                        isNearby: false
+                    };
+                }
+            }
+            
+            // Pre-allocate gridRows array
+            gridRows = new Array(ROWS);
+            
+            // Initial render
+            render();
+        }
+        
+        function clearShape() {
+            // Reset all shape positions and nearby positions
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (grid[y][x].isShape) {
+                        grid[y][x].isShape = false;
+                    }
+                    if (grid[y][x].isNearby) {
+                        grid[y][x].isNearby = false;
+                    }
+                }
+            }
+            shapePositions.clear();
+            nearbyShapePositions.clear();
+        }
+        
+        // Create a pre-allocated array for rows to avoid string concatenation in loops
+        let gridRows = [];
+        
+        function render() {
+            // Reset rows array if not initialized or if size changed
+            if (!gridRows.length || gridRows.length !== ROWS) {
+                gridRows = new Array(ROWS);
+            }
+            
+            // Build HTML row by row - much faster than string concatenation in nested loops
+            for (let y = 0; y < ROWS; y++) {
+                let rowHTML = '';
+                for (let x = 0; x < COLS; x++) {
+                    const cell = grid[y][x];
+                    if (cell.isShape) {
+                        rowHTML += `<span class="shape-char" style="color:${shapeColor}; text-shadow: 0 0 5px ${shapeColor};">${cell.char}</span>`;
+                    } else if (cell.isNearby) {
+                        rowHTML += `<span class="nearby-char">${cell.char}</span>`;
+                    } else {
+                        rowHTML += `<span class="background-char">${cell.char}</span>`;
+                    }
+                }
+                gridRows[y] = rowHTML;
+            }
+            
+            // Join rows with newlines - much faster than adding '\n' in the loop
+            container.innerHTML = gridRows.join('\n');
+        }
+        
+        // Use a pre-generated array of random positions for better performance
+        let randomPositions = [];
+        
+        function generateRandomPositions(count) {
+            randomPositions = [];
+            for (let i = 0; i < count; i++) {
+                randomPositions.push({
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS)
+                });
+            }
+        }
+        
+        function updateRandomCharacters() {
+            // Number of characters to update per frame - reduce to 2% for better performance
+            const updateCount = Math.floor(ROWS * COLS * 0.02);
+            
+            // Generate new random positions if needed
+            if (randomPositions.length !== updateCount) {
+                generateRandomPositions(updateCount);
+            }
+            
+            // Batch all updates before rendering
+            for (let i = 0; i < updateCount; i++) {
+                // Get the pre-computed random position
+                const pos = randomPositions[i];
+                
+                // Generate a new random position for next time
+                randomPositions[i] = {
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS)
+                };
+                
+                // Update with a new random character
+                grid[pos.y][pos.x].char = getRandomChar();
+            }
+            
+            // Re-render after all character updates - only render once
+            render();
+        }
+        
+        function drawShape3D() {
+            // Clear existing shape positions
+            clearShape();
+            
+            // Draw the current shape based on selection
+            switch (currentShape) {
+                case 'cube':
+                    drawCube();
+                    break;
+                case 'sphere':
+                    drawSphere();
+                    break;
+                case 'diamond':
+                    drawDiamond();
+                    break;
+                case 'custom':
+                    drawCustomText();
+                    break;
+            }
+        }
+        
+        function updateShapeRotation() {
+            if (isPlaying) {
+                // In play mode, just do normal auto-rotation without mouse tracking
+                // This is much more stable and avoids crashes
+                angle += 0.01 * (20 / animationSpeed);
+            } else {
+                // In pause mode, use mouse tracking if available
+                if (useMouseRotation) {
+                    // Calculate center of the screen
+                    const centerX = Math.floor(COLS / 2) * 10; // Approximate pixel position (* charWidth)
+                    const centerY = Math.floor(ROWS / 2) * 14; // Approximate pixel position (* charHeight)
+                    
+                    // Calculate vector from center to mouse
+                    const dx = mouseX - centerX;
+                    const dy = mouseY - centerY;
+                    
+                    // Calculate angle (atan2 gives angle in radians)
+                    if (dx !== 0 || dy !== 0) { // Only update if mouse is not at center
+                        angle = Math.atan2(dy, dx);
+                    }
+                }
+            }
+            
+            // Draw the shape with the updated angle
+            drawShape3D();
+            
+            // Re-render will be handled by the caller
+        }
+        
+        function drawCube() {
+            // Clear existing shape positions
+            clearShape();
+            
+            // Center of the screen
+            const centerX = Math.floor(COLS / 2);
+            const centerY = Math.floor(ROWS / 2);
+            
+            // Size of the cube - adjusted for screen size and size setting
+            const size = Math.floor(Math.min(COLS, ROWS) * shapeSize);
+            
+            // Define cube vertices in 3D space (centered at origin)
+            const vertices = [
+                [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+                [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]
+            ];
+            
+            // Define edges connecting vertices
+            const edges = [
+                [0, 1], [1, 2], [2, 3], [3, 0],
+                [4, 5], [5, 6], [6, 7], [7, 4],
+                [0, 4], [1, 5], [2, 6], [3, 7]
+            ];
+            
+            drawShape(vertices, edges, centerX, centerY, size);
+        }
+        
+        function drawSphere() {
+            // Clear existing shape positions
+            clearShape();
+            
+            // Center of the screen
+            const centerX = Math.floor(COLS / 2);
+            const centerY = Math.floor(ROWS / 2);
+            
+            // Size of the sphere - adjusted for screen size and size setting
+            const size = Math.floor(Math.min(COLS, ROWS) * shapeSize);
+            
+            // Create vertices for a "sphere" (actually an icosphere approximation)
+            const vertices = [];
+            const edges = [];
+            
+            // Create a simple approximation with circles at different angles
+            const slices = 8;
+            const stacks = 8;
+            
+            // Create horizontal circles
+            for (let stack = 0; stack <= stacks; stack++) {
+                const phi = (Math.PI * stack) / stacks - Math.PI / 2;
+                const y = Math.sin(phi);
+                const radiusAtHeight = Math.cos(phi);
+                
+                const stackBaseIndex = vertices.length;
+                
+                for (let slice = 0; slice < slices; slice++) {
+                    const theta = (2 * Math.PI * slice) / slices;
+                    const x = radiusAtHeight * Math.cos(theta);
+                    const z = radiusAtHeight * Math.sin(theta);
+                    
+                    vertices.push([x, y, z]);
+                    
+                    // Connect to next point in same stack
+                    if (slice < slices - 1) {
+                        edges.push([stackBaseIndex + slice, stackBaseIndex + slice + 1]);
+                    } else {
+                        // Connect last point to first in the stack
+                        edges.push([stackBaseIndex + slice, stackBaseIndex]);
+                    }
+                    
+                    // Connect to corresponding point in adjacent stack (except for poles)
+                    if (stack > 0 && stack < stacks) {
+                        const prevStackBaseIndex = stackBaseIndex - slices;
+                        edges.push([stackBaseIndex + slice, prevStackBaseIndex + slice]);
+                    }
+                }
+            }
+            
+            drawShape(vertices, edges, centerX, centerY, size);
+        }
+        
+        function drawDiamond() {
+            // Clear existing shape positions
+            clearShape();
+            
+            // Center of the screen
+            const centerX = Math.floor(COLS / 2);
+            const centerY = Math.floor(ROWS / 2);
+            
+            // Size of the diamond - adjusted for screen size and size setting
+            const size = Math.floor(Math.min(COLS, ROWS) * shapeSize);
+            
+            // Define diamond vertices (two pyramids joined at base)
+            const vertices = [
+                [0, -1.5, 0],  // Top point
+                [1, 0, 1],     // Four points at the middle
+                [1, 0, -1],
+                [-1, 0, -1],
+                [-1, 0, 1],
+                [0, 1.5, 0]    // Bottom point
+            ];
+            
+            // Define edges connecting vertices
+            const edges = [
+                [0, 1], [0, 2], [0, 3], [0, 4], // Top to middle
+                [5, 1], [5, 2], [5, 3], [5, 4], // Bottom to middle
+                [1, 2], [2, 3], [3, 4], [4, 1]  // Middle square
+            ];
+            
+            drawShape(vertices, edges, centerX, centerY, size);
+        }
+        
+        function drawCustomText() {
+            if (!customText) {
+                // If no custom text, draw a simple cube instead
+                drawCube();
+                return;
+            }
+            
+            // Center of the screen
+            const centerX = Math.floor(COLS / 2);
+            const centerY = Math.floor(ROWS / 2);
+            
+            // Calculate character size - make it 80% of grid height
+            const targetHeight = Math.floor(ROWS * 0.8);
+            
+            // Calculate width based on character ratio (each char is roughly 0.6 aspect ratio)
+            const charAspectRatio = 0.6; // width/height ratio for typical characters
+            const charWidth = Math.floor(targetHeight * charAspectRatio);
+            
+            // Calculate total width of the text
+            const totalTextWidth = customText.length * charWidth;
+            
+            // Determine base position based on animation type and offsets
+            let startXBase, startYBase;
+            
+            switch(currentAnimation) {
+                case 'scroll':
+                    // For scrolling: Position based on offsetX
+                    // Calculate distance from right edge to allow proper entry
+                    startXBase = COLS - offsetX;
+                    startYBase = centerY - Math.floor(targetHeight / 2);
+                    break;
+                    
+                case 'bounce':
+                    // For bouncing: Use the current offsets
+                    startXBase = offsetX;
+                    startYBase = offsetY;
+                    break;
+                    
+                case 'rotate':
+                    // For rotation: Just center the text
+                    startXBase = centerX - Math.floor(totalTextWidth / 2);
+                    startYBase = centerY - Math.floor(targetHeight / 2);
+                    break;
+                    
+                case 'static':
+                default:
+                    // For static: Center the text
+                    startXBase = centerX - Math.floor(totalTextWidth / 2);
+                    startYBase = centerY - Math.floor(targetHeight / 2);
+                    break;
+            }
+            
+            // For scrolling effect, draw text across the screen with copies
+            if (currentAnimation === 'scroll') {
+                // Space between repetitions of text
+                const spacing = Math.floor(charWidth * 5); // More space between repetitions
+                const fullCycleWidth = totalTextWidth + spacing;
+                
+                // Draw the text multiple times to create a continuous scrolling effect
+                // We calculate positions to handle any size screen
+                let copyPosition = startXBase;
+                
+                // Keep adding copies until we cover the screen and some extra space
+                while (copyPosition < COLS + totalTextWidth) {
+                    for (let i = 0; i < customText.length; i++) {
+                        const char = customText[i].toUpperCase();
+                        const charPosition = copyPosition + i * charWidth;
+                        
+                        // Only draw visible characters
+                        if (charPosition > -charWidth && charPosition < COLS) {
+                            drawLargeChar(char, charPosition, startYBase, charWidth, targetHeight);
+                        }
+                    }
+                    
+                    // Move to position for next copy
+                    copyPosition += fullCycleWidth;
+                }
+            } else {
+                // For non-scrolling animations
+                for (let i = 0; i < customText.length; i++) {
+                    const char = customText[i].toUpperCase();
+                    const startX = startXBase + i * charWidth;
+                    const startY = startYBase;
+                    
+                    // Only draw if it's on screen or partially on screen
+                    if (startX > -charWidth && startX < COLS && 
+                        startY > -targetHeight && startY < ROWS) {
+                        drawLargeChar(char, startX, startY, charWidth, targetHeight);
+                    }
+                }
+            }
+        }
+        
+        function updateTextAnimation() {
+            if (currentShape !== 'custom' || !customText) return;
+            
+            // Calculate character size
+            const targetHeight = Math.floor(ROWS * 0.8);
+            const charWidth = Math.floor(targetHeight * 0.6);
+            const totalTextWidth = customText.length * charWidth;
+            const spacing = Math.floor(charWidth * 3); // Space between text repetitions
+            const fullCycleWidth = totalTextWidth + spacing;
+            
+            switch(textAnimationType) {
+                case 'scroll':
+                    // Scrolling animation: Move text from right to left with wrapping
+                    // Increment by a small amount for smooth scrolling
+                    textOffsetX = (textOffsetX + 2) % fullCycleWidth;
+                    break;
+                    
+                case 'bounce':
+                    // Bouncing animation: Move diagonally and bounce off edges
+                    
+                    // Handle X direction bouncing
+                    if (textDirectionX === 1) {
+                        // Moving right
+                        if (textOffsetX + totalTextWidth >= COLS) {
+                            // Hit right edge, reverse direction
+                            textDirectionX = -1;
+                        }
+                    } else {
+                        // Moving left
+                        if (textOffsetX <= 0) {
+                            // Hit left edge, reverse direction
+                            textDirectionX = 1;
+                        }
+                    }
+                    
+                    // Handle Y direction bouncing
+                    if (textDirectionY === 1) {
+                        // Moving down
+                        if (textOffsetY + targetHeight >= ROWS) {
+                            // Hit bottom edge, reverse direction
+                            textDirectionY = -1;
+                        }
+                    } else {
+                        // Moving up
+                        if (textOffsetY <= 0) {
+                            // Hit top edge, reverse direction
+                            textDirectionY = 1;
+                        }
+                    }
+                    
+                    // Update position based on direction
+                    textOffsetX += textDirectionX * 2;
+                    textOffsetY += textDirectionY * 1; // Move slower vertically for better diagonal effect
+                    break;
+                    
+                case 'static':
+                default:
+                    // No animation for static text
+                    break;
+            }
+            
+            // Redraw the custom text with the new position
+            drawCustomText();
+            render();
+        }
+        
+        function drawLargeChar(char, startX, startY, width, height) {
+            // Simple bitmap definitions for each character
+            // 1 = filled, 0 = empty
+            // Track filled positions for glow effect
+            const charMaps = {
+                'A': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [1,1,1,1],
+                    [1,0,0,1],
+                    [1,0,0,1]
+                ],
+                'B': [
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [1,1,1,0]
+                ],
+                'C': [
+                    [0,1,1,1],
+                    [1,0,0,0],
+                    [1,0,0,0],
+                    [1,0,0,0],
+                    [0,1,1,1]
+                ],
+                'D': [
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,1,1,0]
+                ],
+                'E': [
+                    [1,1,1,1],
+                    [1,0,0,0],
+                    [1,1,1,0],
+                    [1,0,0,0],
+                    [1,1,1,1]
+                ],
+                'F': [
+                    [1,1,1,1],
+                    [1,0,0,0],
+                    [1,1,1,0],
+                    [1,0,0,0],
+                    [1,0,0,0]
+                ],
+                'G': [
+                    [0,1,1,1],
+                    [1,0,0,0],
+                    [1,0,1,1],
+                    [1,0,0,1],
+                    [0,1,1,1]
+                ],
+                'H': [
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,1,1,1],
+                    [1,0,0,1],
+                    [1,0,0,1]
+                ],
+                'I': [
+                    [1,1,1],
+                    [0,1,0],
+                    [0,1,0],
+                    [0,1,0],
+                    [1,1,1]
+                ],
+                'J': [
+                    [0,0,1],
+                    [0,0,1],
+                    [0,0,1],
+                    [1,0,1],
+                    [0,1,0]
+                ],
+                'K': [
+                    [1,0,0,1],
+                    [1,0,1,0],
+                    [1,1,0,0],
+                    [1,0,1,0],
+                    [1,0,0,1]
+                ],
+                'L': [
+                    [1,0,0,0],
+                    [1,0,0,0],
+                    [1,0,0,0],
+                    [1,0,0,0],
+                    [1,1,1,1]
+                ],
+                'M': [
+                    [1,0,0,0,1],
+                    [1,1,0,1,1],
+                    [1,0,1,0,1],
+                    [1,0,0,0,1],
+                    [1,0,0,0,1]
+                ],
+                'N': [
+                    [1,0,0,1],
+                    [1,1,0,1],
+                    [1,0,1,1],
+                    [1,0,0,1],
+                    [1,0,0,1]
+                ],
+                'O': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [0,1,1,0]
+                ],
+                'P': [
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [1,1,1,0],
+                    [1,0,0,0],
+                    [1,0,0,0]
+                ],
+                'Q': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,1,1],
+                    [0,1,1,1]
+                ],
+                'R': [
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [1,1,1,0],
+                    [1,0,1,0],
+                    [1,0,0,1]
+                ],
+                'S': [
+                    [0,1,1,1],
+                    [1,0,0,0],
+                    [0,1,1,0],
+                    [0,0,0,1],
+                    [1,1,1,0]
+                ],
+                'T': [
+                    [1,1,1],
+                    [0,1,0],
+                    [0,1,0],
+                    [0,1,0],
+                    [0,1,0]
+                ],
+                'U': [
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [0,1,1,0]
+                ],
+                'V': [
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [0,1,1,0],
+                    [0,0,1,0]
+                ],
+                'W': [
+                    [1,0,0,0,1],
+                    [1,0,0,0,1],
+                    [1,0,1,0,1],
+                    [1,1,0,1,1],
+                    [1,0,0,0,1]
+                ],
+                'X': [
+                    [1,0,0,1],
+                    [0,1,1,0],
+                    [0,0,1,0],
+                    [0,1,1,0],
+                    [1,0,0,1]
+                ],
+                'Y': [
+                    [1,0,0,1],
+                    [0,1,1,0],
+                    [0,0,1,0],
+                    [0,0,1,0],
+                    [0,0,1,0]
+                ],
+                'Z': [
+                    [1,1,1,1],
+                    [0,0,1,0],
+                    [0,1,0,0],
+                    [1,0,0,0],
+                    [1,1,1,1]
+                ],
+                '0': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [1,0,0,1],
+                    [0,1,1,0]
+                ],
+                '1': [
+                    [0,1,0],
+                    [1,1,0],
+                    [0,1,0],
+                    [0,1,0],
+                    [1,1,1]
+                ],
+                '2': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [0,0,1,0],
+                    [0,1,0,0],
+                    [1,1,1,1]
+                ],
+                '3': [
+                    [1,1,1,0],
+                    [0,0,0,1],
+                    [0,1,1,0],
+                    [0,0,0,1],
+                    [1,1,1,0]
+                ],
+                '4': [
+                    [0,0,1,0],
+                    [0,1,1,0],
+                    [1,0,1,0],
+                    [1,1,1,1],
+                    [0,0,1,0]
+                ],
+                '5': [
+                    [1,1,1,1],
+                    [1,0,0,0],
+                    [1,1,1,0],
+                    [0,0,0,1],
+                    [1,1,1,0]
+                ],
+                '6': [
+                    [0,1,1,0],
+                    [1,0,0,0],
+                    [1,1,1,0],
+                    [1,0,0,1],
+                    [0,1,1,0]
+                ],
+                '7': [
+                    [1,1,1,1],
+                    [0,0,0,1],
+                    [0,0,1,0],
+                    [0,1,0,0],
+                    [0,1,0,0]
+                ],
+                '8': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [0,1,1,0]
+                ],
+                '9': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [0,1,1,1],
+                    [0,0,0,1],
+                    [0,1,1,0]
+                ],
+                ' ': [
+                    [0,0,0],
+                    [0,0,0],
+                    [0,0,0],
+                    [0,0,0],
+                    [0,0,0]
+                ],
+                '!': [
+                    [1],
+                    [1],
+                    [1],
+                    [0],
+                    [1]
+                ],
+                '?': [
+                    [0,1,1,0],
+                    [1,0,0,1],
+                    [0,0,1,0],
+                    [0,0,0,0],
+                    [0,0,1,0]
+                ],
+                '.': [
+                    [0],
+                    [0],
+                    [0],
+                    [0],
+                    [1]
+                ],
+                ',': [
+                    [0],
+                    [0],
+                    [0],
+                    [1],
+                    [1]
+                ],
+                ':': [
+                    [0],
+                    [1],
+                    [0],
+                    [1],
+                    [0]
+                ],
+                ';': [
+                    [0],
+                    [1],
+                    [0],
+                    [1],
+                    [1]
+                ],
+                '-': [
+                    [0,0,0],
+                    [0,0,0],
+                    [1,1,1],
+                    [0,0,0],
+                    [0,0,0]
+                ],
+                '+': [
+                    [0,0,0],
+                    [0,1,0],
+                    [1,1,1],
+                    [0,1,0],
+                    [0,0,0]
+                ],
+                '=': [
+                    [0,0,0],
+                    [1,1,1],
+                    [0,0,0],
+                    [1,1,1],
+                    [0,0,0]
+                ]
+                // Add more characters as needed
+            };
+            
+            // Default to a block if character not found
+            const bitmap = charMaps[char] || [
+                [1,1],
+                [1,1],
+                [1,1],
+                [1,1],
+                [1,1]
+            ];
+            
+            // Calculate the actual pixel size for each bitmap cell
+            const cellWidth = Math.floor(width / (bitmap[0].length || 1));
+            const cellHeight = Math.floor(height / bitmap.length);
+            
+            // Draw the character bitmap
+            const filledPositions = [];
+            
+            for (let y = 0; y < bitmap.length; y++) {
+                for (let x = 0; x < bitmap[y].length; x++) {
+                    if (bitmap[y][x] === 1) {
+                        // Fill the cell with characters
+                        for (let cy = 0; cy < cellHeight; cy++) {
+                            for (let cx = 0; cx < cellWidth; cx++) {
+                                const gridX = startX + x * cellWidth + cx;
+                                const gridY = startY + y * cellHeight + cy;
+                                
+                                if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
+                                    grid[gridY][gridX].isShape = true;
+                                    shapePositions.add(`${gridX},${gridY}`);
+                                    filledPositions.push({x: gridX, y: gridY});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Add glow effect to positions adjacent to the character
+            for (const pos of filledPositions) {
+                addNearbyGlow(pos.x, pos.y);
+            }
+        }
+        
+        function drawShape(vertices, edges, centerX, centerY, size) {
+            // Rotation matrix calculations - use angle for consistent rotation
+            // We use 3 different rotation factors to create a more complex rotation
+            const rotationX = angle;
+            const rotationY = useMouseRotation ? angle * 0.7 : angle * 0.7; 
+            const rotationZ = useMouseRotation ? angle * 0.3 : angle * 0.3;
+            
+            const cosA = Math.cos(rotationX);
+            const sinA = Math.sin(rotationX);
+            const cosB = Math.cos(rotationY);
+            const sinB = Math.sin(rotationY);
+            const cosC = Math.cos(rotationZ);
+            const sinC = Math.sin(rotationZ);
+            
+            // Transform vertices with rotation
+            const transformedVertices = vertices.map(v => {
+                // Copy vertex to avoid modifying the original
+                let x = v[0], y = v[1], z = v[2];
+                
+                // Rotate around Y axis
+                let x1 = x * cosA - z * sinA;
+                let z1 = x * sinA + z * cosA;
+                
+                // Rotate around X axis
+                let y2 = y * cosB - z1 * sinB;
+                let z2 = y * sinB + z1 * cosB;
+                
+                // Rotate around Z axis for more complexity
+                let x3 = x1 * cosC - y2 * sinC;
+                let y3 = x1 * sinC + y2 * cosC;
+                
+                // Project onto 2D screen and scale
+                return [
+                    centerX + size * x3,
+                    centerY + size * y3,
+                ];
+            });
+            
+            // Draw edges
+            edges.forEach(edge => {
+                const [p1, p2] = edge;
+                drawLine(
+                    Math.round(transformedVertices[p1][0]), 
+                    Math.round(transformedVertices[p1][1]),
+                    Math.round(transformedVertices[p2][0]), 
+                    Math.round(transformedVertices[p2][1])
+                );
+            });
+        }
+        
+        function drawLine(x0, y0, x1, y1) {
+            // Integer values only
+            x0 = Math.round(x0);
+            y0 = Math.round(y0);
+            x1 = Math.round(x1);
+            y1 = Math.round(y1);
+            
+            // Bresenham's line algorithm
+            const dx = Math.abs(x1 - x0);
+            const dy = Math.abs(y1 - y0);
+            const sx = (x0 < x1) ? 1 : -1;
+            const sy = (y0 < y1) ? 1 : -1;
+            let err = dx - dy;
+            
+            // Track line positions to add nearby glow effect later
+            const linePositions = [];
+            
+            while (true) {
+                if (x0 >= 0 && x0 < COLS && y0 >= 0 && y0 < ROWS) {
+                    // Mark as shape but keep the character
+                    grid[y0][x0].isShape = true;
+                    shapePositions.add(`${x0},${y0}`);
+                    linePositions.push({x: x0, y: y0});
+                }
+                
+                if (x0 === x1 && y0 === y1) break;
+                
+                const e2 = 2 * err;
+                if (e2 > -dy) {
+                    err -= dy;
+                    x0 += sx;
+                }
+                if (e2 < dx) {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
+            
+            // Add nearby glow to adjacent cells
+            for (const pos of linePositions) {
+                addNearbyGlow(pos.x, pos.y);
+            }
+        }
+        
+        function addNearbyGlow(x, y) {
+            // Add glow effect to cells adjacent to shape
+            // Check all 8 surrounding cells
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue; // Skip the center cell (shape itself)
+                    
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    
+                    // Check if within bounds and not already a shape
+                    if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && 
+                        !grid[ny][nx].isShape && !grid[ny][nx].isNearby) {
+                        grid[ny][nx].isNearby = true;
+                        nearbyShapePositions.add(`${nx},${ny}`);
+                    }
+                }
+            }
+        }
+        
+        // Set up animations with the initial speeds
+        // Use requestAnimationFrame for smoother animations
+        let lastCharUpdateTime = 0;
+        let animationFrameId = null;
+        
+        function animationLoop(timestamp) {
+            if (!lastCharUpdateTime) lastCharUpdateTime = timestamp;
+            
+            // Calculate time since last character update
+            const elapsed = timestamp - lastCharUpdateTime;
+            
+            // Update characters at the specified interval
+            if (elapsed >= charAnimationSpeed) {
+                updateRandomCharacters();
+                lastCharUpdateTime = timestamp;
+            }
+            
+            // Update colors if using random colors
+            if (useRandomColors && timestamp - lastColorChangeTime > colorChangeSpeed) {
+                shapeColor = getRandomColor();
+                lastColorChangeTime = timestamp;
+            }
+            
+            // Always update shape animation every frame for smooth motion
+            // using optimized requestAnimationFrame timing
+            if (currentAnimation !== 'static') {
+                updateShapeAnimation();
+            }
+            
+            // Continue the animation loop
+            animationFrameId = requestAnimationFrame(animationLoop);
+        }
+        
+        // Generate a random color in hex format
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+        
+        function startAnimations() {
+            // Cancel any existing animations including background
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            if (backgroundAnimationId) {
+                cancelAnimationFrame(backgroundAnimationId);
+                backgroundAnimationId = null;
+            }
+            
+            if (currentAnimation === 'static') {
+                // For static animation, just draw it once and start background loop
+                updateShapeAnimation();
+                backgroundAnimationId = requestAnimationFrame(backgroundLoop);
+            } else {
+                // Start main animation loop using requestAnimationFrame for better performance
+                lastCharUpdateTime = 0;
+                animationFrameId = requestAnimationFrame(animationLoop);
+            }
+            
+            isPlaying = true;
+            playPauseBtn.textContent = 'PAUSE';
+        }
+        
+        function updateShapeAnimation() {
+            switch (currentAnimation) {
+                case 'rotate':
+                    // Update rotation angle
+                    angle += 0.01 * (20 / animationSpeed);
+                    if (currentShape === 'custom') {
+                        drawCustomText();
+                    } else {
+                        updateShapeRotation();
+                    }
+                    break;
+                    
+                case 'bounce':
+                    updateBounceAnimation();
+                    break;
+                    
+                case 'scroll':
+                    updateScrollAnimation();
+                    break;
+                    
+                case 'static':
+                default:
+                    // For static, just draw once
+                    if (currentShape === 'custom') {
+                        drawCustomText();
+                    } else {
+                        drawShape3D();
+                    }
+                    break;
+            }
+            
+            // Render the updated grid
+            render();
+        }
+        
+        function updateScrollAnimation() {
+            // Calculate size based on shape and increment speed
+            let scrollSpeed = Math.max(1, Math.floor(animationSpeed / 5));
+            
+            if (currentShape === 'custom') {
+                if (!customText) return;
+                
+                // For text, we need to handle the full cycle calculations
+                const targetHeight = Math.floor(ROWS * 0.8);
+                const charWidth = Math.floor(targetHeight * 0.6);
+                const totalTextWidth = customText.length * charWidth;
+                const spacing = Math.floor(charWidth * 5); // Space between repetitions
+                const fullCycleWidth = totalTextWidth + spacing;
+                
+                // Increment by scroll speed and wrap around the cycle
+                offsetX = (offsetX + scrollSpeed) % fullCycleWidth;
+            } else {
+                // For 3D shapes, make them wide enough that there's a gap
+                const size = Math.floor(Math.min(COLS, ROWS) * 0.18) * 2;
+                const width = size * 2; // Double width for scrolling effect
+                
+                // Increment by scroll speed and wrap around
+                offsetX = (offsetX + scrollSpeed) % (COLS + width);
+            }
+            
+            // Clear the shape
+            clearShape();
+            
+            // Draw the shape at the appropriate position
+            if (currentShape === 'custom') {
+                drawCustomText();
+            } else {
+                // For 3D shapes, we need a custom drawing approach for scrolling
+                drawScrollingShape3D();
+            }
+        }
+        
+        function drawScrollingShape3D() {
+            // For scrolling 3D shapes, we don't use rotation
+            // Instead we draw the shape at different positions across the screen
+            
+            // Center Y position
+            const centerY = Math.floor(ROWS / 2);
+            
+            // Size of the shape - adjusted for screen size and size setting
+            const size = Math.floor(Math.min(COLS, ROWS) * shapeSize);
+            
+            // Calculate positions for multiple copies of the shape
+            const shapeWidth = size * 2;
+            const spacing = shapeWidth * 2; // Space between shapes
+            const cycleWidth = shapeWidth + spacing;
+            
+            // Calculate first visible shape position
+            let xPos = COLS - offsetX;
+            while (xPos > -shapeWidth) {
+                switch (currentShape) {
+                    case 'cube':
+                        drawSimpleCube(xPos, centerY, size);
+                        break;
+                    case 'sphere':
+                        drawSimpleSphere(xPos, centerY, size);
+                        break;
+                    case 'diamond':
+                        drawSimpleDiamond(xPos, centerY, size);
+                        break;
+                }
+                // Move to previous shape
+                xPos -= cycleWidth;
+            }
+            
+            // Calculate positions moving rightward
+            xPos = COLS - offsetX + cycleWidth;
+            while (xPos < COLS + shapeWidth) {
+                switch (currentShape) {
+                    case 'cube':
+                        drawSimpleCube(xPos, centerY, size);
+                        break;
+                    case 'sphere':
+                        drawSimpleSphere(xPos, centerY, size);
+                        break;
+                    case 'diamond':
+                        drawSimpleDiamond(xPos, centerY, size);
+                        break;
+                }
+                // Move to next shape
+                xPos += cycleWidth;
+            }
+        }
+        
+        // Simplified shape drawing for scrolling (no rotation)
+        function drawSimpleCube(centerX, centerY, size) {
+            // Draw a simple cube outline as a square with lines
+            const halfSize = size;
+            
+            // Draw the square
+            drawLine(centerX - halfSize, centerY - halfSize, centerX + halfSize, centerY - halfSize);
+            drawLine(centerX + halfSize, centerY - halfSize, centerX + halfSize, centerY + halfSize);
+            drawLine(centerX + halfSize, centerY + halfSize, centerX - halfSize, centerY + halfSize);
+            drawLine(centerX - halfSize, centerY + halfSize, centerX - halfSize, centerY - halfSize);
+            
+            // Add some diagonal lines for 3D effect
+            drawLine(centerX - halfSize/2, centerY - halfSize/2, centerX + halfSize/2, centerY - halfSize/2);
+            drawLine(centerX + halfSize/2, centerY - halfSize/2, centerX + halfSize/2, centerY + halfSize/2);
+            drawLine(centerX + halfSize/2, centerY + halfSize/2, centerX - halfSize/2, centerY + halfSize/2);
+            drawLine(centerX - halfSize/2, centerY + halfSize/2, centerX - halfSize/2, centerY - halfSize/2);
+            
+            // Connect the squares
+            drawLine(centerX - halfSize, centerY - halfSize, centerX - halfSize/2, centerY - halfSize/2);
+            drawLine(centerX + halfSize, centerY - halfSize, centerX + halfSize/2, centerY - halfSize/2);
+            drawLine(centerX + halfSize, centerY + halfSize, centerX + halfSize/2, centerY + halfSize/2);
+            drawLine(centerX - halfSize, centerY + halfSize, centerX - halfSize/2, centerY + halfSize/2);
+        }
+        
+        function drawSimpleSphere(centerX, centerY, size) {
+            // Draw a simple sphere as a circle
+            const steps = 16;
+            const radius = size;
+            
+            for (let i = 0; i < steps; i++) {
+                const angle1 = (i / steps) * Math.PI * 2;
+                const angle2 = ((i + 1) / steps) * Math.PI * 2;
+                
+                const x1 = centerX + Math.cos(angle1) * radius;
+                const y1 = centerY + Math.sin(angle1) * radius;
+                const x2 = centerX + Math.cos(angle2) * radius;
+                const y2 = centerY + Math.sin(angle2) * radius;
+                
+                drawLine(x1, y1, x2, y2);
+            }
+            
+            // Add some interior circles for 3D effect
+            const innerRadius = radius * 0.6;
+            for (let i = 0; i < steps; i += 2) {
+                const angle1 = (i / steps) * Math.PI * 2;
+                const angle2 = ((i + 1) / steps) * Math.PI * 2;
+                
+                const x1 = centerX + Math.cos(angle1) * innerRadius;
+                const y1 = centerY + Math.sin(angle1) * innerRadius;
+                const x2 = centerX + Math.cos(angle2) * innerRadius;
+                const y2 = centerY + Math.sin(angle2) * innerRadius;
+                
+                drawLine(x1, y1, x2, y2);
+            }
+        }
+        
+        function drawSimpleDiamond(centerX, centerY, size) {
+            // Draw a diamond shape
+            const topY = centerY - size;
+            const bottomY = centerY + size;
+            const leftX = centerX - size;
+            const rightX = centerX + size;
+            const midY = centerY;
+            
+            // Draw the diamond outline
+            drawLine(centerX, topY, rightX, midY);
+            drawLine(rightX, midY, centerX, bottomY);
+            drawLine(centerX, bottomY, leftX, midY);
+            drawLine(leftX, midY, centerX, topY);
+            
+            // Add some interior lines for effect
+            drawLine(centerX, topY * 0.8 + midY * 0.2, centerX, bottomY * 0.8 + midY * 0.2);
+            drawLine(leftX * 0.8 + centerX * 0.2, midY, rightX * 0.8 + centerX * 0.2, midY);
+        }
+        
+        function updateBounceAnimation() {
+            // Calculate size based on shape
+            let width, height;
+            
+            if (currentShape === 'custom') {
+                if (!customText) return;
+                
+                const targetHeight = Math.floor(ROWS * 0.8);
+                const charWidth = Math.floor(targetHeight * 0.6);
+                width = customText.length * charWidth;
+                height = targetHeight;
+            } else {
+                // For 3D shapes, estimate the width/height
+                const size = Math.floor(Math.min(COLS, ROWS) * shapeSize) * 2;
+                width = size;
+                height = size;
+            }
+            
+            // Calculate bounce speed based on animation speed (higher = faster)
+            const moveSpeed = Math.max(1, Math.floor(animationSpeed / 5));
+            
+            // Handle X direction
+            if (directionX === 1) {
+                // Moving right
+                if (offsetX + width >= COLS) {
+                    directionX = -1;
+                }
+            } else {
+                // Moving left
+                if (offsetX <= 0) {
+                    directionX = 1;
+                }
+            }
+            
+            // Handle Y direction
+            if (directionY === 1) {
+                // Moving down
+                if (offsetY + height >= ROWS) {
+                    directionY = -1;
+                }
+            } else {
+                // Moving up
+                if (offsetY <= 0) {
+                    directionY = 1;
+                }
+            }
+            
+            // Update position with speed based on animation speed
+            offsetX += directionX * moveSpeed;
+            offsetY += directionY * (moveSpeed / 2); // Move slower vertically for better diagonal effect
+            
+            // Clear the previous shape
+            clearShape();
+            
+            // Draw the shape at the new position
+            if (currentShape === 'custom') {
+                drawCustomText();
+            } else {
+                // For 3D shapes, we'll draw them at the updated position
+                const centerX = offsetX + width/2;
+                const centerY = offsetY + height/2;
+                
+                switch(currentShape) {
+                    case 'cube':
+                        drawCube();
+                        break;
+                    case 'sphere':
+                        drawSphere();
+                        break;
+                    case 'diamond':
+                        drawDiamond();
+                        break;
+                }
+            }
+        }
+        
+        // Separate animation loop just for background character cycling
+        function backgroundLoop(timestamp) {
+            if (!lastCharUpdateTime) lastCharUpdateTime = timestamp;
+            
+            // Calculate time since last character update
+            const elapsed = timestamp - lastCharUpdateTime;
+            
+            // Update characters at the specified interval
+            if (elapsed >= charAnimationSpeed) {
+                updateRandomCharacters();
+                lastCharUpdateTime = timestamp;
+            }
+            
+            // Update colors if using random colors
+            if (useRandomColors && timestamp - lastColorChangeTime > colorChangeSpeed) {
+                shapeColor = getRandomColor();
+                lastColorChangeTime = timestamp;
+                
+                // Just re-render with the new color - no need to recalculate shape positions
+                render();
+            }
+            
+            // Continue the background animation loop
+            backgroundAnimationId = requestAnimationFrame(backgroundLoop);
+        }
+        
+        function stopAnimations() {
+            // Cancel shape animation
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            // Start or continue background animation
+            if (!backgroundAnimationId) {
+                backgroundAnimationId = requestAnimationFrame(backgroundLoop);
+            }
+            
+            isPlaying = false;
+            playPauseBtn.textContent = 'PLAY';
+        }
+        
+        function togglePlayPause() {
+            if (isPlaying) {
+                stopAnimations();
+            } else {
+                startAnimations();
+            }
+        }
+        
+        function updateCharSpeed() {
+            const newSpeed = parseInt(charSpeedInput.value);
+            if (newSpeed >= 10 && newSpeed <= 1000) {
+                charAnimationSpeed = newSpeed;
+                // No need to restart animation - the animationLoop will use the new speed
+            }
+        }
+        
+        function updateAnimationSpeed() {
+            const newSpeed = parseInt(animSpeedInput.value);
+            if (newSpeed >= 1 && newSpeed <= 100) {
+                animationSpeed = newSpeed;
+                // No need to restart animation as it uses the global speed value
+            }
+        }
+        
+        function updateShapeSize() {
+            const newSize = parseInt(shapeSizeInput.value) / 100;
+            shapeSize = newSize;
+            
+            // Redraw if needed
+            if (isPlaying) {
+                updateShapeAnimation();
+            }
+        }
+        
+        function changeShape() {
+            // Update the currentShape based on radio selection
+            currentShape = document.querySelector('input[name="shape"]:checked').value;
+            
+            // Reset animation position when changing shapes
+            offsetX = 0;
+            offsetY = 0;
+            directionX = 1;
+            directionY = 1;
+            angle = 0;
+            
+            // Show/hide custom text input
+            if (currentShape === 'custom') {
+                customTextWrapper.style.display = 'block';
+            } else {
+                customTextWrapper.style.display = 'none';
+            }
+            
+            // Restart animations if playing
+            if (isPlaying) {
+                startAnimations();
+            }
+        }
+        
+        function changeAnimation() {
+            // Update animation type
+            currentAnimation = document.querySelector('input[name="animation"]:checked').value;
+            
+            // Reset animation position
+            offsetX = 0;
+            offsetY = 0;
+            directionX = 1;
+            directionY = 1;
+            angle = 0;
+            
+            // Restart animations if playing
+            if (isPlaying) {
+                startAnimations();
+            }
+        }
+        
+        function updateCustomText() {
+            customText = customTextInput.value;
+            
+            // Redraw if needed
+            if (isPlaying && currentShape === 'custom') {
+                updateShapeAnimation();
+            }
+        }
+        
+        function toggleOptions() {
+            // Toggle the display of advanced options
+            if (advancedOptions.style.display === 'none') {
+                advancedOptions.style.display = 'block';
+                toggleOptionsBtn.textContent = 'Hide Options';
+            } else {
+                advancedOptions.style.display = 'none';
+                toggleOptionsBtn.textContent = 'Show Options';
+            }
+        }
+        
+        // Function to update the shape color
+        function updateShapeColor() {
+            const colorValue = colorSelect.value;
+            
+            switch (colorValue) {
+                case 'blue':
+                    shapeColor = '#4285f4'; // Google blue
+                    useRandomColors = false;
+                    break;
+                case 'red':
+                    shapeColor = '#ea4335'; // Google red
+                    useRandomColors = false;
+                    break;
+                case 'green':
+                    shapeColor = '#34a853'; // Google green
+                    useRandomColors = false;
+                    break;
+                case 'random':
+                    useRandomColors = true;
+                    lastColorChangeTime = performance.now();
+                    shapeColor = getRandomColor(); // Initial random color
+                    break;
+            }
+            
+            // Update color change speed based on input
+            const speedValue = parseInt(colorSpeedInput.value);
+            if (speedValue >= 1 && speedValue <= 10) {
+                colorChangeSpeed = speedValue * 1000; // Convert seconds to milliseconds
+            }
+            
+            // Redraw if needed
+            render(); // Just update the rendering without recalculating shape
+        }
+        
+        // Function to update the color change speed
+        function updateColorChangeSpeed() {
+            const speedValue = parseInt(colorSpeedInput.value);
+            if (speedValue >= 1 && speedValue <= 10) {
+                colorChangeSpeed = speedValue * 1000; // Convert seconds to milliseconds
+            }
+        }
+        
+        // Event listeners for controls
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        charSpeedInput.addEventListener('change', updateCharSpeed);
+        animSpeedInput.addEventListener('change', updateAnimationSpeed);
+        shapeSizeInput.addEventListener('input', updateShapeSize);
+        colorSelect.addEventListener('change', updateShapeColor);
+        colorSpeedInput.addEventListener('change', updateColorChangeSpeed);
+        toggleOptionsBtn.addEventListener('click', toggleOptions);
+        
+        // Shape selection event listeners
+        shapeRadios.forEach(radio => {
+            radio.addEventListener('change', changeShape);
+        });
+        
+        // Animation selection event listeners
+        animationRadios.forEach(radio => {
+            radio.addEventListener('change', changeAnimation);
+        });
+        
+        customTextInput.addEventListener('input', updateCustomText);
+        
+        // Mouse tracking
+        document.addEventListener('mousemove', (event) => {
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+            useMouseRotation = true;
+            
+            // When animation is paused and mouse moves, immediately update
+            if (!isPlaying) {
+                updateShapeAnimation();
+            }
+        });
+        
+        document.addEventListener('mouseout', () => {
+            // Stop using mouse tracking when mouse leaves the window
+            useMouseRotation = false;
+        });
+        
+        // Add a tooltip to explain mouse tracking behavior
+        function addTooltip() {
+            const tooltip = document.createElement('div');
+            tooltip.style.position = 'fixed';
+            tooltip.style.top = '10px';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.background = 'rgba(0, 0, 0, 0.7)';
+            tooltip.style.color = 'white';
+            tooltip.style.padding = '8px 15px';
+            tooltip.style.borderRadius = '4px';
+            tooltip.style.fontFamily = 'monospace';
+            tooltip.style.zIndex = '1000';
+            tooltip.style.opacity = '1';
+            tooltip.style.transition = 'opacity 0.5s';
+            tooltip.textContent = 'Mouse controls rotation when paused. Use color selector to change shape color.';
+            
+            document.body.appendChild(tooltip);
+            
+            // Fade out after 4 seconds
+            setTimeout(() => {
+                tooltip.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(tooltip);
+                }, 500);
+            }, 4000);
+        }
+        
+        // Pre-generate random positions on start
+        window.addEventListener('resize', () => {
+            // Recalculate grid size on window resize
+            const { COLS: newCols, ROWS: newRows } = calculateGridSize();
+            // Only reinitialize if dimensions changed
+            if (COLS !== newCols || ROWS !== newRows) {
+                initializeScreen();
+            }
+        });
+        
+        // Initialize the screen when the page loads
+        window.addEventListener('load', () => {
+            // Generate initial random positions for better startup performance
+            const updateCount = Math.floor(ROWS * COLS * 0.02);
+            generateRandomPositions(updateCount);
+            
+            initializeScreen();
+            startAnimations();
+            updateShapeColor(); // Set initial color based on selector
+            addTooltip();
+        });
+    </script>
+</body>
+</html>
